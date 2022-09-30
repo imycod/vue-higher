@@ -122,9 +122,10 @@
 
 <body>
     <div id="root">
+
         <div class="wrapper">
-            <class-course-test></class-course-test>
-            <!-- <exam-student-score></exam-student-score> -->
+            <class-course-test :is-growth="true"></class-course-test>
+            <exam-student-score :from="false"></exam-student-score>
         </div>
     </div>
     <script src='https://cdn.bootcss.com/vue/2.5.16/vue.min.js'></script>
@@ -135,11 +136,12 @@
         const { Table } = iview
         Vue.component('Table', Table)
 
-        const baseScoreView = { 
+        const baseScoreView = { //视图组件不掺杂任何逻辑 （班课+成长课/考试+测试）不同的地方渲染，跳转逻辑不同，在一个组件里写要4个if且逻辑混杂
             props: ['info', 'columns', 'callback'],
             template: `
             <div class="result-wrapper">
                 <div>
+                    <div class="header">恭喜您完成考试</div>
                     <div class="container">
                         <img class="bg" src="./img/score-bg.png">
                         <div class="tip">快来看您的成绩~</div>
@@ -173,13 +175,14 @@
 
                 },
                 created() {
+
                 },
                 render(h) {
                     const args = {
                         props: {
                             columns: props.columns,
                             info: events.init.call(this),
-                            callback: events.callback.bind(this),
+                            callback: events.toAnalysis,
                         },
                     }
                     const wrapper = h('div', null, [
@@ -189,28 +192,74 @@
                 }
             }
         }
-
         const classCourseTest = withHandler(baseScoreView, {
-            props: {
+            props: { // 拿不在this里的，可控的数据
+                isGrowth: 'true',
                 columns: columns1,
             },
             events: {
-                init() {
+                init() { // 拿在this上的数据，
                     return this.$parent.scoreInfo1
                 },
-                callback() {
-                    alert(`这是班课页面，来自成长课是: ${this.isGrowth},执行班课且非成长课跳转逻辑`)
+                toAnalysis() {
+                    alert(`这是班课页面，来自成长课是: ${props.isGrowth},执行班课且非成长课跳转逻辑`)
+                    const testPaperId = this.$route.query.dataId
+                    const query = this.isGrowth ? {
+                        type: 'growth',
+                        growthId: this.$route.query.growthId,
+                        courseId: this.$route.query.courseId,
+                        chapterId: this.$route.query.chapterId,
+                        chapterDetailId: this.$route.query.chapterDetailId,
+                        dataId: this.$route.query.dataId
+                    } : {
+                        type: 'class',
+                        classId: this.$route.query.classId,
+                        courseId: this.$route.query.courseId,
+                        chapterId: this.$route.query.chapterId,
+                        chapterDetailId: this.$route.query.chapterDetailId,
+                        dataId: this.$route.query.dataId
+                    }
+                    const { href } = this.$router.resolve({
+                        path: `/test/student/${testPaperId}/result-detail`,
+                        query
+                    })
+                    window.open(href, '_blank');
+                }
+            }
+        });
+        const examStudentScore = withHandler(baseScoreView, {
+            props: {
+                from: 'exam',
+                columns: columns2,
+            },
+            events: {
+                init() {
+                    return this.$parent.scoreInfo2
+                },
+                toAnalysis() {
+                    console.log(this);
+                    alert(`这是考试页面，来自测试是: ${this.props.from},执行考试相关逻辑`)
+                    if (this.from === 'exam') {
+                        this.$router.push({
+                            path: `/exam/student/${this.$route.params.examId}/result-detail`
+                        });
+                    } else if (this.from === 'test') {
+                        STUDENT_FINISH_TEST_DETAIL(this.$route.params.testId)
+                    }
                 }
             }
         })
+
         const vm = new Vue({
             el: "#root",
             components: {
-                classCourseTest: classCourseTest
+                classCourseTest,
+                examStudentScore,
             },
             data() {
                 return {
                     scoreInfo1,
+                    scoreInfo2,
                 }
             },
             created() {
