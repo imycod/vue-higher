@@ -140,16 +140,13 @@
             template: `
             <div class="result-wrapper">
                 <div>
+                    <div class="header">恭喜您完成考试</div>
                     <div class="container">
                         <img class="bg" src="./img/score-bg.png">
                         <div class="tip">快来看您的成绩~</div>
-                        <div class="score-container text-center"><span class="score">{{info.stuScore}}</span>分</div>
                     </div>
                     <div class="exam-info">
-                        <div class="title to" :title="info.testName">
-                            {{info.testName}}
-                        </div>
-                        <Table stripe :columns="columns" :data="[info]" class="table"></Table>
+                        {{info.testName}}
                     </div>
                     <div class="btn cp" @click="callback">
                         查看试题分析
@@ -178,7 +175,7 @@
                     const args = {
                         props: {
                             columns: props.columns,
-                            info: events.init.call(this),
+                            info: events.init(),
                             callback: events.callback.bind(this),
                         },
                     }
@@ -219,11 +216,12 @@
                     },
                     events: {
                         init() {
-                            return this.$parent.scoreInfo1
+                            console.log(this);
+                            return this.scoreInfo1
                         },
                         callback() {
                             alert(`这是班课页面，来自成长课是: ${this.isGrowth},执行班课且非成长课跳转逻辑`)
-
+                         
                         }
                     }
                 }),
