@@ -166,33 +166,24 @@
         const withHandler = function (view, params) {
             const { props, events } = params
             return {
-                props: ['from', 'info', 'scoreInfo', 'isGrowth'], //不通用，按理说，参数是要保持一致的,这是适配的办法,或者说是兼容的办法
-                data() { //公共数据
+                props: ['from', 'info', 'scoreInfo', 'isGrowth'],
+                data() {
                     return {
-                        loading: false,
+                        loading: true,
+                        info: {},
                     }
                 },
-                methods: { //与方法
+                methods: {
 
                 },
-                created() { 
-                    // console.log(this.from);
-                    // console.log(this.scoreInfo);
-                    // console.log(props.key);
-                    // console.log(this[props.key]);
-                    this.loading = !_.isEmpty(this[props.key])
+                created() {
+                    this.info = events.init.call(this)
                 },
                 render(h) {
-                    // const newProps = {
-                    //     info: this[props.key],
-                    //     columns: props.columns,
-                    //     callback: events.tosee.bind(this),
-                    // }
                     const args = {
                         props: {
-                            info: this[props.key],
                             columns: props.columns,
-                            callback: events.toAnalysis.bind(this),
+                            callback: events.callback.bind(this),
                         },
                     }
                     const wrapper = h('div', null, [
@@ -204,13 +195,15 @@
         }
         const classCourseTest = withHandler(baseScoreView, {
             props: {
-                // info: scoreInfo1,
                 key: 'scoreInfo',
                 columns: columns1,
             },
             events: {
-                toAnalysis() {
-                    alert( `这是班课页面，来自成长课是: ${this.isGrowth},执行班课且非成长课跳转逻辑`)
+                init(){
+                    
+                },
+                callback() {
+                    alert(`这是班课页面，来自成长课是: ${this.isGrowth},执行班课且非成长课跳转逻辑`)
                     const testPaperId = this.$route.query.dataId
                     const query = this.isGrowth ? {
                         type: 'growth',
@@ -237,13 +230,12 @@
         });
         const examStudentScore = withHandler(baseScoreView, {
             props: {
-                // info: scoreInfo2,
                 key: 'info',
                 columns: columns2,
             },
             events: {
-                toAnalysis() {
-                    alert( `这是考试页面，来自测试是: ${this.from},执行考试相关逻辑`)
+                callback() {
+                    alert(`这是考试页面，来自测试是: ${this.from},执行考试相关逻辑`)
                     if (this.from === 'exam') {
                         this.$router.push({
                             path: `/exam/student/${this.$route.params.examId}/result-detail`

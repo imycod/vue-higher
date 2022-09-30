@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel='stylesheet' href='https://cdn.bootcss.com/iview/2.14.0/styles/iview.css' />
+    <style>
+        .result-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            width: 50%;
+            background-color: #fff;
+            border: 1px solid red;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root">
+        <demo name="demo"></demo>
+        <demo2></demo2>
+    </div>
+    <script src='https://cdn.bootcss.com/vue/2.5.16/vue.min.js'></script>
+    <script src='https://cdn.bootcss.com/iview/2.14.0/iview.min.js'></script>
+    <script src='https://cdn.bootcss.com/lodash.js/4.17.10/lodash.min.js'></script>
+    <script src="./config.js"></script>
+    <script>
+        const { Table } = iview
+        Vue.component('Table', Table)
+
+        const view = {
+            props: {
+                name: { // 父组件props
+                    type: String,
+                    default: '默认',
+                },
+                callback: { // 高阶组件事件
+                    type: Function,
+                    require: true,
+                    default: () => { },
+                },
+                info: {  // 父组件props
+                    type: Object,
+                    default: null,
+                }
+            },
+            template: `
+            <div class="result-wrapper">
+              {{info}} | {{name}}
+              <button @click="callback">callback</button>
+            </div>
+            `,
+        }
+
+        const withHandler = function (view, params) {
+            const { props, events } = params
+            return {
+                props: ['name'],
+                data() {
+                    return {
+                        loading: true,
+                        info: null,
+                    }
+                },
+                methods: {
+
+                },
+                created() {
+                    this.info = events.init.call(this)
+                },
+                render(h) {
+                    const args = {
+                        props: {
+                            ...this.$props, // 组件自身被父组件传进来的
+                            ...props, // 高阶组件包裹进来的数据
+                            info: this.info,
+                            callback: events.callback.bind(this),
+                        },
+                    }
+                    console.log(args);
+                    const wrapper = h('div', null, [
+                        this.loading ? h(view, args) : null
+                    ])
+                    return wrapper
+                }
+            }
+        }
+
+        const demo = withHandler(view, {
+            props: {
+                name:'name',
+            },
+            events: {
+                init() {
+                    return {
+                        name: 'demo的数据',
+                    }
+                },
+                callback() {
+                    alert('callback')
+                }
+            }
+        });
+
+
+        const demo2 = withHandler(view, {
+            props: {
+                name:'阿萨的',
+            },
+            events: {
+                init() {
+                    return {
+                        name: '这是demo2'
+                    }
+                },
+                callback() {
+                    alert('callback2')
+                }
+            }
+        })
+
+        const vm = new Vue({
+            el: "#root",
+            components: {
+                demo,
+                demo2,
+            },
+            data() {
+                return {
+
+                }
+            },
+            created() {
+
+            },
+            methods: {
+
+            },
+        })
+    </script>
+</body>
+
+</html>
