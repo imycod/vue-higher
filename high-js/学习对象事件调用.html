@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel='stylesheet' href='https://cdn.bootcss.com/iview/2.14.0/styles/iview.css' />
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <div id="root">
+
+        <button @click="handleClick1">handleClick1</button>
+    </div>
+    <script src='https://cdn.bootcss.com/vue/2.5.16/vue.min.js'></script>
+    <script>
+        // const eventsobj1 = {
+        //     props: {
+        //         name: 'hello'
+        //     },
+        //     events: {
+        //         callback() {
+        //             console.log(this);
+        //         }
+        //     }
+        // }
+        // class EventsObj {
+        //     name = 'hello'
+        //     callback() {
+        //         console.log(this.name);
+        //     }
+        // }
+        // const eventsobj1=new EventsObj()
+
+        const eventsobj2 = {
+            name: 'hello',
+            callback(props) {
+                // 假设我能够在这里，既能用this.name 也能用this.test就好了
+                console.log(this);
+                console.log(props.name);
+            }
+        }
+        const vm = new Vue({
+            el: "#root",
+            components: {
+            },
+            data() {
+                return {
+                    test:'xxx'
+                }
+            },
+            created() {
+
+            },
+            methods: {
+                handleClick1() {
+                    eventsobj2.callback.call(this,eventsobj2)
+                }
+            },
+        })
+    </script>
+</body>
+
+</html>

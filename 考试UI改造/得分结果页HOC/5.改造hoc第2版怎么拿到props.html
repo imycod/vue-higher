@@ -136,6 +136,7 @@
         const { Table } = iview
         Vue.component('Table', Table)
 
+        // props只跟状态有关，而不应该跟逻辑有关
         const baseScoreView = { //视图组件不掺杂任何逻辑 （班课+成长课/考试+测试）不同的地方渲染，跳转逻辑不同，在一个组件里写要4个if且逻辑混杂
             props: ['info', 'columns', 'callback'],
             template: `
@@ -182,7 +183,7 @@
                         props: {
                             columns: props.columns,
                             info: events.init.call(this),
-                            callback: events.toAnalysis,
+                            callback:events.toAnalysis.bind(this),
                         },
                     }
                     const wrapper = h('div', null, [
@@ -202,7 +203,9 @@
                     return this.$parent.scoreInfo1
                 },
                 toAnalysis() {
-                    alert(`这是班课页面，来自成长课是: ${props.isGrowth},执行班课且非成长课跳转逻辑`)
+                    console.log(this.isGrowth);
+                    console.log(this);
+                    alert(`这是班课页面，来自成长课是: ${this.isGrowth},执行班课且非成长课跳转逻辑`)
                     const testPaperId = this.$route.query.dataId
                     const query = this.isGrowth ? {
                         type: 'growth',
@@ -227,6 +230,7 @@
                 }
             }
         });
+      
         const examStudentScore = withHandler(baseScoreView, {
             props: {
                 from: 'exam',
